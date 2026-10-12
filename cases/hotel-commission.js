@@ -2,21 +2,21 @@ const initialStats={money:50,users:50,loyalty:50,tech:50};
 // Warm the most frequently used assets early so scene transitions don't wait on image decoding.
 (function preloadGameArt(){
   const assets=[
-    "../images/backgrounds/bg_meeting.webp",
-    "../images/backgrounds/bg_analytics.webp",
-    "../images/backgrounds/bg_office.webp",
-    "../images/characters/elena_normal.webp",
-    "../images/characters/elena_smile.webp",
-    "../images/characters/anton_normal.webp",
-    "../images/characters/anton_think.webp",
-    "../images/characters/anton_surprised.webp",
-    "../images/characters/maxim_normal.webp",
-    "../images/characters/sveta_normal.webp",
-    "../images/characters/irina.webp",
-    "../images/endings/ending_success.webp",
-    "../images/endings/ending_compromise.webp",
-    "../images/endings/ending_bad.webp",
-    "../images/endings/ending_cancelled.webp"
+    "../images/backgrounds/bg_meeting.png",
+    "../images/backgrounds/bg_analytics.png",
+    "../images/backgrounds/bg_office.png",
+    "../images/characters/elena_normal.png",
+    "../images/characters/elena_smile.png",
+    "../images/characters/anton_normal.png",
+    "../images/characters/anton_think.png",
+    "../images/characters/anton_surprised.png",
+    "../images/characters/maxim_normal.png",
+    "../images/characters/sveta_normal.png",
+    "../images/characters/irina.png",
+    "../images/endings/ending_success.png",
+    "../images/endings/ending_compromise.png",
+    "../images/endings/ending_bad.png",
+    "../images/endings/ending_cancelled.png"
   ];
   assets.forEach(src => {
     const img = new Image();
@@ -88,8 +88,8 @@ function typeDialogue(text){
  overlay.onclick=()=>{if(typingTimer){window.AnalystEngine.finishTyping(typingTimer,box,fullDialogue);typingTimer=null;reveal()}};
 }
 function renderScene(scene){currentScene=scene;chosen=null;el("feedback").style.display="none";el("continueBtn").style.display="none";el("continueBtn").textContent="ПРОДОЛЖИТЬ →";el("sceneCounter").textContent=`СЦЕНА ${scene.n} / 7`;el("progressBar").style.width=`${Math.min(100,scene.n/7*100)}%`;el("speaker").textContent=scene.speaker;el("sceneTitle").textContent=scene.title;el("context").textContent=scene.context;
- const art=el("sceneArt");const bgMap={intro:"bg_meeting.webp",metrics:"bg_analytics.webp",design:"bg_meeting.webp",power:"bg_analytics.webp",srm:"bg_meeting.webp",diagnostics:"bg_analytics.webp",final:"bg_meeting.webp",nextstep:"bg_meeting.webp"};art.style.backgroundImage=`url("../images/backgrounds/${bgMap[scene.id]||"bg_office.webp"}")`;
- let char="";if(/Елена/.test(scene.speaker))char=scene.id==="intro"?"elena_smile.webp":"elena_normal.webp";else if(/Антон/.test(scene.speaker))char=scene.id==="srm"?"anton_surprised.webp":scene.id==="power"?"anton_think.webp":"anton_normal.webp";else if(/Максим/.test(scene.speaker))char="maxim_normal.webp";else if(/Света/.test(scene.speaker))char="sveta_normal.webp";else if(/Ирина/.test(scene.speaker))char="irina.webp";else if(/Мария/.test(scene.speaker))char="elena_normal.webp";
+ const art=el("sceneArt");const bgMap={intro:"bg_meeting.png",metrics:"bg_analytics.png",design:"bg_meeting.png",power:"bg_analytics.png",srm:"bg_meeting.png",diagnostics:"bg_analytics.png",final:"bg_meeting.png",nextstep:"bg_meeting.png"};art.style.backgroundImage=`url("../images/backgrounds/${bgMap[scene.id]||"bg_office.png"}")`;
+ let char="";if(/Елена/.test(scene.speaker))char=scene.id==="intro"?"elena_smile.png":"elena_normal.png";else if(/Антон/.test(scene.speaker))char=scene.id==="srm"?"anton_surprised.png":scene.id==="power"?"anton_think.png":"anton_normal.png";else if(/Максим/.test(scene.speaker))char="maxim_normal.png";else if(/Света/.test(scene.speaker))char="sveta_normal.png";else if(/Ирина/.test(scene.speaker))char="irina.png";else if(/Мария/.test(scene.speaker))char="elena_normal.png";
  const sprite=el("sprite");if(char){sprite.src="../images/characters/"+char;sprite.alt=scene.speaker.split("·")[0].trim();art.classList.remove("no-character")}else{sprite.removeAttribute("src");sprite.alt="";art.classList.add("no-character")}
  // Story information lives in the character's dialogue, not in a duplicated yellow strip.
  const dialogueText=scene.id==="intro"?scene.dialogue+" У нас около 800 тысяч пользователей поиска в день, базовая конверсия — 4%, средняя комиссия — примерно 1 200 рублей. План — три недели. Дима, возьмёшь эксперимент?":scene.id==="metrics"?scene.dialogue+" Максим предлагает смотреть на CTR, но клик ещё не означает бронирование. Что будем считать успехом?":scene.id==="design"?scene.dialogue+" У нас 60 географических кластеров. Какой дизайн лучше учитывает эту проблему?":scene.id==="power"?scene.dialogue+" Исторические данные по кластерам помогут оценить MDE и мощность. Как поступим?":scene.id==="srm"?scene.dialogue+" Ирина предлагает сначала понять, какое распределение вообще ожидалось. С чего начнёшь?":scene.id==="diagnostics"?scene.dialogue+" Какой шаг поможет локализовать проблему?":scene.dialogue;
@@ -113,6 +113,6 @@ function showNextStep(){const s={id:"nextstep",n:7,title:"Что делать д
 {key:"B",text:"Сразу повторить эксперимент с тем же дизайном",feedback:"Если причина SRM сохраняется, повтор может воспроизвести ту же проблему.",lesson:"Устраняй известные риски до повторного исследования.",flag:"next_repeat"},
 {key:"C",text:"Пересмотреть дизайн и заранее зафиксировать критерии успеха и остановки",feedback:"Это разумно после диагностики: нужно учесть рандомизацию, интерференцию, мощность и защитные метрики.",lesson:"Предварительно фиксируй правила анализа и принятия решений.",flag:"next_redesign",good:true}
 ]};renderScene(s);showScreen("game")}
-function finish(type){let data;if(type==="good")data={id:"good",title:"Решение на основе данных",icon:"🏆",text:"Ты не допустил поспешной раскатки и организовал диагностику. Компания пока не доказала, что новая стратегия работает, но теперь есть конкретный путь к надёжному ответу.",rating:"Высокая аналитическая зрелость: ты отделил положительный сигнал от достаточных оснований для решения.",delta:{money:0,users:0,loyalty:2,tech:5}};else if(type==="compromise")data={id:"compromise",title:"Осторожный компромисс",icon:"🛡️",text:"Ты не допустил немедленной полной раскатки, но оставил часть вопросов без ответа. Риск снижен, однако повторять эксперимент без устранения причины SRM опасно.",rating:"Разумная осторожность, но диагностику нужно довести до конца.",delta:{money:-2,users:0,loyalty:1,tech:2}};else if(type==="bad")data={id:"bad",title:"Красивый график, плохое решение",icon:"💥",text:"Ты масштабировал изменение, опираясь на положительную метрику, хотя причина SRM не установлена и защитные метрики ухудшились. Компания рискует потерять доверие пользователей.",rating:"Серьёзная аналитическая ошибка: значимость не исправляет невалидное измерение.",delta:{money:4,users:-4,loyalty:-8,tech:-5}};else data={id:"abandon",title:"Эксперимент отменён",icon:"🚪",text:"Ты отказался от идеи, не выяснив, была ли она бесполезной или результат нельзя надёжно интерпретировать. Немедленный риск снижен, но потенциальная возможность осталась неисследованной.",rating:"Осторожность полезна, но вывод о бесполезности идеи пока не доказан.",delta:{money:-2,users:0,loyalty:0,tech:0}};endingId=data.id;for(const k in data.delta)stats[k]=Math.max(0,Math.min(100,stats[k]+data.delta[k]));el("endingCounter").textContent="КОНЦОВКА · "+({"good":"1 / 4","compromise":"2 / 4","bad":"3 / 4","abandon":"4 / 4"}[data.id]);el("endingArt").textContent="";const endingImage={good:"ending_success.webp",compromise:"ending_compromise.webp",bad:"ending_bad.webp",abandon:"ending_cancelled.webp"};el("endingArt").style.backgroundImage=`url("../images/endings/${endingImage[data.id]}")`;el("endingArt").setAttribute("role","img");el("endingArt").setAttribute("aria-label",data.title);el("endingTitle").textContent=data.title;el("endingText").textContent=data.text;el("endingRating").textContent=data.rating;el("endingStats").innerHTML=statMarkup(stats);save();showScreen("ending")}
+function finish(type){let data;if(type==="good")data={id:"good",title:"Решение на основе данных",icon:"🏆",text:"Ты не допустил поспешной раскатки и организовал диагностику. Компания пока не доказала, что новая стратегия работает, но теперь есть конкретный путь к надёжному ответу.",rating:"Высокая аналитическая зрелость: ты отделил положительный сигнал от достаточных оснований для решения.",delta:{money:0,users:0,loyalty:2,tech:5}};else if(type==="compromise")data={id:"compromise",title:"Осторожный компромисс",icon:"🛡️",text:"Ты не допустил немедленной полной раскатки, но оставил часть вопросов без ответа. Риск снижен, однако повторять эксперимент без устранения причины SRM опасно.",rating:"Разумная осторожность, но диагностику нужно довести до конца.",delta:{money:-2,users:0,loyalty:1,tech:2}};else if(type==="bad")data={id:"bad",title:"Красивый график, плохое решение",icon:"💥",text:"Ты масштабировал изменение, опираясь на положительную метрику, хотя причина SRM не установлена и защитные метрики ухудшились. Компания рискует потерять доверие пользователей.",rating:"Серьёзная аналитическая ошибка: значимость не исправляет невалидное измерение.",delta:{money:4,users:-4,loyalty:-8,tech:-5}};else data={id:"abandon",title:"Эксперимент отменён",icon:"🚪",text:"Ты отказался от идеи, не выяснив, была ли она бесполезной или результат нельзя надёжно интерпретировать. Немедленный риск снижен, но потенциальная возможность осталась неисследованной.",rating:"Осторожность полезна, но вывод о бесполезности идеи пока не доказан.",delta:{money:-2,users:0,loyalty:0,tech:0}};endingId=data.id;for(const k in data.delta)stats[k]=Math.max(0,Math.min(100,stats[k]+data.delta[k]));el("endingCounter").textContent="КОНЦОВКА · "+({"good":"1 / 4","compromise":"2 / 4","bad":"3 / 4","abandon":"4 / 4"}[data.id]);el("endingArt").textContent="";const endingImage={good:"ending_success.png",compromise:"ending_compromise.png",bad:"ending_bad.png",abandon:"ending_cancelled.png"};el("endingArt").style.backgroundImage=`url("../images/endings/${endingImage[data.id]}")`;el("endingArt").setAttribute("role","img");el("endingArt").setAttribute("aria-label",data.title);el("endingTitle").textContent=data.title;el("endingText").textContent=data.text;el("endingRating").textContent=data.rating;el("endingStats").innerHTML=statMarkup(stats);save();showScreen("ending")}
 function showDebrief(){el("debriefContent").innerHTML=debrief.map(([h,t])=>`<div class="note"><strong>${h}</strong><br>${t}</div>`).join("");el("decisionHistory").innerHTML=decisions.map((d,i)=>`<div class="metric" style="margin:7px 0"><strong style="font-size:12px">${i+1}. ${d.scene}</strong><div style="margin:6px 0">${d.choice}</div><div class="small">${d.lesson}</div></div>`).join("")||"<p class='small'>История решений появится после прохождения.</p>";showScreen("debrief")}
 load();
