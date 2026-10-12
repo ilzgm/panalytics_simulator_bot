@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071426">
+<title>Analyst Simulator — Буст-комиссия в отелях</title>
+<link rel="stylesheet" href="../engine/styles.css">
+
+</head>
+<body>
+<div class="app">
+  <div class="topbar"><a href="../index.html" style="color:var(--cyan);text-decoration:none">← ВСЕ КЕЙСЫ</a><span id="saveStatus">Локальное сохранение: включено</span></div>
+  <div class="logo">ANALYST SIMULATOR</div>
+  <div class="small" style="margin:5px 0 16px">Реальные продуктовые задачи через эксперименты</div>
+
+  <section id="home" class="screen active">
+    <div class="hero pixel"><div class="sun"></div><div class="city"></div><div class="hero-badge">КЕЙС 01</div><div class="hero-title">АНАЛИТИК<br>НА СМЕНЕ</div><div class="hero-sub">От решений зависит судьба продукта.</div></div>
+    <div class="panel" style="padding:14px">
+      <h2>Буст-комиссия в ранжировании отелей</h2>
+      <p class="small">Сервис бронирования хочет поднять выше отели, которые платят повышенную комиссию. Вместе с командой тебе предстоит спроектировать тест, расследовать странность в данных и решить, можно ли доверять результатам.</p>
+      <div class="pill">8 этапов</div><div class="pill">4 концовки</div><div class="pill">10–15 минут</div>
+      <h3 style="margin-top:14px">Характеристики компании</h3>
+      <div id="homeStats" class="stats"></div>
+      <button class="btn primary" onclick="startGame()">▶ НАЧАТЬ КЕЙС</button>
+      <button class="btn" onclick="resetProgress()">↺ Сбросить прогресс</button>
+      <p class="small" style="margin:10px 0 0">Прогресс хранится в этом браузере. Сервер и регистрация не нужны.</p>
+    </div>
+  </section>
+
+  <section id="game" class="screen">
+    <div class="scene-head"><span id="sceneCounter">СЦЕНА 1 / 7</span><div class="progress"><span id="progressBar" style="width:14%"></span></div><button class="btn" style="width:auto;padding:5px 8px;margin:0" onclick="goHome()">⌂</button></div>
+    <div id="sceneArt" class="scene-art">
+      <img id="sprite" class="character-sprite" alt="">
+      <div class="dialogue-overlay">
+        <div id="speaker" class="dialogue-kicker">Елена · директор</div>
+        <h2 id="sceneTitle" class="dialogue-title">Новая идея</h2>
+        <div id="dialogue" class="speech"></div>
+      </div>
+    </div>
+    <div class="panel scene-content">
+      <div id="context" class="note context-note"></div>
+      <div class="choice-label">ВЫБЕРИ ДЕЙСТВИЕ</div>
+      <div id="choices" class="choices"></div>
+      <div id="feedback" class="note" style="display:none"></div>
+      <button id="continueBtn" class="btn primary" style="display:none" onclick="continueScene()">ПРОДОЛЖИТЬ →</button>
+    </div>
+  </section>
+
+  <section id="event" class="screen">
+    <div class="panel event-panel" style="padding:18px">
+      <div class="scene-head"><span id="eventEyebrow">СОБЫТИЕ</span><span class="pill">КЕЙС 01</span></div>
+      <div class="event-icon" id="eventIcon">▶</div>
+      <h2 id="eventTitle">Эксперимент запущен</h2>
+      <p id="eventText" class="small"></p>
+      <div id="eventFacts" class="event-facts"></div>
+      <button id="eventButton" class="btn primary" onclick="continueEvent()">ПРОДОЛЖИТЬ →</button>
+    </div>
+  </section>
+
+  <section id="results" class="screen">
+    <div class="panel dashboard" style="padding:14px">
+      <div class="scene-head"><span>ЭКСПЕРИМЕНТ · ИТОГИ</span><span class="pill">ДЕНЬ 21 / 21</span></div>
+      <div class="dashboard-head"><div><div class="small">EXPERIMENT PLATFORM / HOTEL SEARCH</div><h2 style="margin:5px 0">Hotel Commission Boost</h2><span class="pill">Завершён</span><span class="pill warn-pill">Требуется диагностика</span></div></div>
+      <div class="dashboard-grid">
+        <div class="dash-card primary-metric"><div class="dash-label">ОСНОВНАЯ МЕТРИКА</div><div class="dash-value positive">+1,8%</div><div class="small">Комиссия на пользователя поиска</div><div class="dash-foot">Статистически значимо по текущему анализу</div></div>
+        <div class="dash-card"><div class="dash-label">ЗАЩИТНЫЕ МЕТРИКИ</div><div class="dash-value negative">Риск</div><div class="small">Конверсия и отмены/возвраты ухудшились</div></div>
+        <div class="dash-card"><div class="dash-label">КАЧЕСТВО ДАННЫХ</div><div class="dash-value negative">SRM</div><div class="small">p = 0,002 на 8-й день; причина не установлена</div></div>
+        <div class="dash-card"><div class="dash-label">ДИЗАЙН</div><div class="dash-value">60 кластеров</div><div class="small">Ожидаемые доли зависят от размера и назначения кластеров</div></div>
+      </div>
+      <div class="dash-section"><h3>Что видно в данных</h3><div class="result-row"><span>Комиссионная выручка на пользователя поиска</span><strong class="positive">+1,8%</strong></div><div class="result-row"><span>Статистическая значимость</span><strong class="positive">Достигнута*</strong></div><div class="result-row"><span>Конверсия в бронирование</span><strong class="negative">Ухудшилась</strong></div><div class="result-row"><span>Отмены и возвраты</span><strong class="negative">Ухудшились</strong></div><div class="result-row"><span>SRM / корректность распределения</span><strong class="negative">Не объяснено</strong></div></div>
+      <div class="note">* Значимость по текущему анализу не гарантирует валидность оценки. Точные размеры ухудшения защитных метрик, p-value основной метрики и доверительный интервал в исходных данных не заданы — они не подставляются искусственно.</div>
+      <button class="btn primary" onclick="showFinalDecision()">ПОДГОТОВИТЬ РЕКОМЕНДАЦИЮ →</button>
+    </div>
+  </section>
+  <section id="ending" class="screen">
+    <div class="panel" style="padding:14px">
+      <div class="scene-head"><span id="endingCounter">ФИНАЛ</span><span class="pill">КЕЙС 01</span></div>
+      <div id="endingArt" class="ending-art">🏆</div>
+      <div id="endingTitle" class="ending-title">Решение на основе данных</div>
+      <p id="endingText" style="font-size:13px;line-height:1.55"></p>
+      <div id="endingRating" class="note"></div>
+      <h3>Изменение характеристик</h3>
+      <div id="endingStats" class="stats"></div>
+      <button class="btn primary" onclick="showDebrief()">ПОСМОТРЕТЬ РАЗБОР →</button>
+      <button class="btn" onclick="goHome()">В ГЛАВНОЕ МЕНЮ</button>
+    </div>
+  </section>
+
+  <section id="debrief" class="screen">
+    <div class="panel" style="padding:14px">
+      <div class="scene-head"><span>ПОСЛЕ ИГРЫ</span><span class="pill">РАЗБОР</span></div>
+      <h2>Что важно запомнить</h2>
+      <div id="debriefContent"></div>
+      <h3 style="margin-top:16px">Твои решения</h3>
+      <div id="decisionHistory"></div>
+      <button class="btn primary" onclick="startGame()">↻ ПРОЙТИ ЕЩЁ РАЗ</button>
+      <button class="btn" onclick="goHome()">В ГЛАВНОЕ МЕНЮ</button>
+    </div>
+  </section>
+  <div class="footer">ANALYST SIMULATOR · PROTOTYPE 0.1 · PIXEL OFFICE</div>
+</div>
+<script src="../engine/engine.js"></script>
+<script src="hotel-commission.js"></script>
+</body>
+</html>
