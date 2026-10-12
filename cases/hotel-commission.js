@@ -1,4 +1,29 @@
 const initialStats={money:50,users:50,loyalty:50,tech:50};
+// Warm the most frequently used assets early so scene transitions don't wait on image decoding.
+(function preloadGameArt(){
+  const assets=[
+    "../images/backgrounds/bg_meeting.webp",
+    "../images/backgrounds/bg_analytics.webp",
+    "../images/backgrounds/bg_office.webp",
+    "../images/characters/elena_normal.webp",
+    "../images/characters/elena_smile.webp",
+    "../images/characters/anton_normal.webp",
+    "../images/characters/anton_think.webp",
+    "../images/characters/anton_surprised.webp",
+    "../images/characters/maxim_normal.webp",
+    "../images/characters/sveta_normal.webp",
+    "../images/characters/irina.webp",
+    "../images/endings/ending_success.webp",
+    "../images/endings/ending_compromise.webp",
+    "../images/endings/ending_bad.webp",
+    "../images/endings/ending_cancelled.webp"
+  ];
+  assets.forEach(src => {
+    const img = new Image();
+    img.decoding = "async";
+    img.src = src;
+  });
+})();
 const statMeta=[["money","Деньги","🪙"],["users","Пользователи","👥"],["loyalty","Лояльность","💗"],["tech","Технологии","⚙️"]];
 let stats={...initialStats}, decisions=[], sceneIndex=0, currentScene=null, chosen=null, recommendation=null, nextStep=null, endingId=null, typingTimer=null, fullDialogue="", dialogueRevealed=false, pendingEvent=null;
 const scenes=[
