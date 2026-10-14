@@ -113,7 +113,7 @@ function validateInitData_(raw) {
     .filter(key => key !== 'hash')
     .map(key => key + '=' + p[key]);
   pairs.sort();
-  const dataCheckString = pairs.join('\\n');
+  const dataCheckString = pairs.join('\n');
   const secret = Utilities.computeHmacSha256Signature(token, 'WebAppData');
   const dataCheckBytes = Utilities.newBlob(dataCheckString).getBytes();
   const calculated = bytesToHex_(Utilities.computeHmacSha256Signature(dataCheckBytes, secret));
