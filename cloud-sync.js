@@ -125,6 +125,7 @@
     load,
     completeEpisode,
     getProgress: () => currentProgress,
+    isEpisodeSaved: id => !!currentProgress && Array.isArray(currentProgress.completedEpisodes) && currentProgress.completedEpisodes.includes(Number(id)),
     getLocalCompleted: readLocal,
     setStatus
   };
