@@ -1,12 +1,16 @@
 /* Cloud progress bridge for the main game. Uses the same Apps Script API as test-sync. */
 (function () {
   'use strict';
+  // Prevent duplicate script tags from creating competing sync instances.
+  if (window.AnalystCloud) return;
   const API_URL = 'https://script.google.com/macros/s/AKfycbzlFRNKm6RIg_sQ3O4gID8ICmNhtO6qInSKZTQOIeUidB8lmssI0fnxGtkLedffCgRl/exec';
   const tg = window.Telegram && window.Telegram.WebApp;
   let callbackCounter = 0;
   let active = false;
   let currentProgress = null;
   let readyPromise = null;
+  // Invalidates cloud reads that started before a completion was saved.
+  let progressMutationVersion = 0;
   const completedKey = 'analystSimulatorCompletedEpisodes';
 
   function readLocal() {
@@ -82,10 +86,15 @@
   }
   async function load() {
     if (!tg || typeof tg.initData !== 'string' || !tg.initData) return { ok: false, reason: 'not_telegram' };
+    const versionAtStart = progressMutationVersion;
     try {
       if (typeof tg.ready === 'function') tg.ready();
       const result = await request('load');
-      applyCloudProgress(result.progress);
+      if (versionAtStart === progressMutationVersion) {
+        applyCloudProgress(result.progress);
+      } else {
+        console.info('[AnalystCloud] Ignored stale progress load after a newer completion.');
+      }
       setStatus('Облачный прогресс синхронизирован.');
       return { ok: true, progress: result.progress };
     } catch (error) {
@@ -99,6 +108,8 @@
     if (node) node.textContent = message;
   }
   async function completeEpisode(id) {
+    // Any in-flight load that began earlier must not overwrite this completion.
+    progressMutationVersion++;
     if (!tg || typeof tg.initData !== 'string' || !tg.initData) {
       const ids = readLocal();
       if (!ids.includes(Number(id))) ids.push(Number(id));
