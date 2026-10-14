@@ -55,7 +55,12 @@
           const messages = {
             session_expired: 'Сервер не нашёл сессию. Проверь диагностику POST ниже.',
             session_not_created: 'POST дошёл, но сервер не создал сессию. initData мог быть отклонён.',
-            telegram_init_data_rejected: 'Сервер получил POST, но отклонил Telegram initData (подпись, время или формат).',
+            telegram_init_data_rejected: 'Сервер отклонил Telegram initData, причина не классифицирована.',
+            telegram_init_data_missing_fields: 'В initData отсутствует hash или auth_date.',
+            telegram_init_data_future_auth_date: 'auth_date оказался в будущем. Проверь время устройства/сервера.',
+            telegram_init_data_expired: 'Telegram initData старше разрешённых 24 часов. Закрой Mini App и открой заново из бота.',
+            telegram_init_data_signature_mismatch: 'Подпись initData не совпала. Проверь, что BOT_TOKEN принадлежит именно этому боту и скопирован без пробелов.',
+            telegram_init_data_invalid_user: 'Подпись проверена, но поле user отсутствует или имеет неверный формат.',
             telegram_validation_configuration_error: 'Ошибка проверки initData или конфигурации Apps Script. Проверь Executions без публикации секретов.',
             session_creation_server_error: 'POST дошёл, но при создании сессии произошла внутренняя ошибка.',
             session_cache_miss: 'Сервер отметил сессию созданной, но не нашёл её в кэше при следующем запросе.',
