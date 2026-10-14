@@ -96,18 +96,17 @@ function validateInitData_(raw) {
   const token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
   if (!token) throw new Error('BOT_TOKEN is not configured');
 
-  const p = new URLSearchParams(raw);
-  const hash = p.get('hash');
-  const authDate = Number(p.get('auth_date'));
+  const p = parseInitData_(raw);
+  const hash = p.hash;
+  const authDate = Number(p.auth_date);
   if (!hash || !authDate) return null;
 
   const now = Math.floor(Date.now() / 1000);
   if (authDate > now + 60 || now - authDate > INIT_DATA_MAX_AGE_SECONDS) return null;
 
-  const pairs = [];
-  p.forEach((value, key) => {
-    if (key !== 'hash') pairs.push(key + '=' + value);
-  });
+  const pairs = Object.keys(p)
+    .filter(key => key !== 'hash')
+    .map(key => key + '=' + p[key]);
   pairs.sort();
   const dataCheckString = pairs.join('\n');
   const secret = Utilities.computeHmacSha256Signature(token, 'WebAppData');
@@ -116,11 +115,25 @@ function validateInitData_(raw) {
 
   let user;
   try {
-    user = JSON.parse(p.get('user') || 'null');
+    user = JSON.parse(p.user || 'null');
   } catch (_) {
     return null;
   }
   return user && user.id ? user : null;
+}
+
+function parseInitData_(raw) {
+  const result = {};
+  raw.split('&').forEach(part => {
+    if (!part) return;
+    const index = part.indexOf('=');
+    const rawKey = index >= 0 ? part.slice(0, index) : part;
+    const rawValue = index >= 0 ? part.slice(index + 1) : '';
+    const key = decodeURIComponent(rawKey.split('+').join(' '));
+    const value = decodeURIComponent(rawValue.split('+').join(' '));
+    result[key] = value;
+  });
+  return result;
 }
 
 function readProgress_(telegramId) {
