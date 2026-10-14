@@ -10,7 +10,7 @@
     *{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#102945,#030812);color:var(--text);font-family:"Courier New",monospace;min-height:100vh}
     main{max-width:680px;margin:0 auto;padding:18px 14px 36px}.brand{font-weight:bold;letter-spacing:1.5px;color:var(--cyan);font-size:13px}.panel{margin:16px 0;padding:16px;background:rgba(13,32,56,.95);border:2px solid var(--line);box-shadow:4px 4px 0 #020812}
     h1{font-size:clamp(22px,5vw,32px);line-height:1.1;margin:12px 0}h2{font-size:16px;margin:0 0 10px}p,li{font-size:12px;line-height:1.6;color:var(--muted)}.status{padding:10px;background:#071426;border:1px solid #315b83;font-size:12px;line-height:1.5;overflow-wrap:anywhere}.status.ok{border-color:#438d69;color:var(--green)}.status.err{border-color:#a04d5b;color:var(--red)}.status.warn{border-color:#92763c;color:var(--gold)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.btn{font:inherit;font-size:12px;line-height:1.4;padding:12px 10px;background:#153a5d;color:#fff;border:2px solid #4b7ba5;text-align:left;cursor:pointer;min-height:48px}.btn.primary{background:#1464dc;border-color:#a5ddff;text-align:center;font-weight:bold}.btn:disabled{opacity:.45;cursor:not-allowed}.progress{font-size:13px;line-height:1.8;margin:10px 0}.tag{display:inline-block;border:1px solid var(--line);padding:3px 6px;margin:2px;font-size:10px;color:var(--cyan)}.foot{font-size:10px;color:#6e8aa6;text-align:center;margin-top:22px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.btn{font:inherit;font-size:12px;line-height:1.4;padding:12px 10px;background:#153a5d;color:#fff;border:2px solid #4b7ba5;text-align:left;cursor:pointer;min-height:48px}.btn.primary{background:#1464dc;border-color:#a5ddff;text-align:center;font-weight:bold}.btn:disabled{opacity:.45;cursor:not-allowed}.progress{font-size:13px;line-height:1.8;margin:10px 0}.foot{font-size:10px;color:#6e8aa6;text-align:center;margin-top:22px}
     @media(max-width:380px){main{padding:12px 10px}.panel{padding:12px}.row{grid-template-columns:1fr}}
   </style>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -29,8 +29,8 @@
   </div>
   <div class="panel">
     <h2>2. Проверка записи и правил</h2>
-    <p>Кнопки записывают завершение эпизода в облако. Сервер должен отклонить эпизод 2, пока эпизод 1 не завершён. Уже завершённые эпизоды останутся завершёнными.</p>
-    <div class="row"><button class="btn" id="episode2Btn">ПРОВЕРИТЬ ЗАЩИТУ: ЭПИЗОД 2</button><button class="btn primary" id="episode1Btn">ЗАПИСАТЬ ЗАВЕРШЕНИЕ ЭПИЗОДА 1</button></div>
+    <p>Кнопки записывают завершение эпизода в облако. Если эпизод 1 ещё не завершён, попытка завершить эпизод 2 должна быть отклонена. Если эпизод 1 уже завершён, попытка завершить эпизод 2 запишет его в облако. Повторная запись завершённого эпизода безопасна и не удаляет данные.</p>
+    <div class="row"><button class="btn" id="episode2Btn">ПОПРОБОВАТЬ ЗАВЕРШИТЬ ЭПИЗОД 2</button><button class="btn primary" id="episode1Btn">ЗАПИСАТЬ ЗАВЕРШЕНИЕ ЭПИЗОДА 1</button></div>
     <div class="row"><button class="btn primary" id="episode2CompleteBtn">ЗАПИСАТЬ ЗАВЕРШЕНИЕ ЭПИЗОДА 2</button><button class="btn" id="clearLogBtn">ОЧИСТИТЬ СООБЩЕНИЯ НА ЭКРАНЕ</button></div>
     <div id="actionStatus" class="status">Действия ещё не выполнялись.</div>
   </div>
