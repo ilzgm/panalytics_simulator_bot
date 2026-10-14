@@ -15,15 +15,15 @@ function doPost(e) {
   try {
     let user;
     try {
-      user = validateInitData_(String(p.initData || ''));
+      const validation = validateInitData_(String(p.initData || ''));
+      user = validation.user;
+      if (!user) {
+        cache.put('analyst_diag_' + nonce, 'init_data_' + validation.reason, SESSION_TTL_SECONDS);
+        return HtmlService.createHtmlOutput('Unauthorized');
+      }
     } catch (validationError) {
       cache.put('analyst_diag_' + nonce, 'validation_error', SESSION_TTL_SECONDS);
       console.error('Telegram initData validation failed; details omitted.');
-      return HtmlService.createHtmlOutput('Unauthorized');
-    }
-
-    if (!user) {
-      cache.put('analyst_diag_' + nonce, 'init_data_rejected', SESSION_TTL_SECONDS);
       return HtmlService.createHtmlOutput('Unauthorized');
     }
 
@@ -54,7 +54,11 @@ function doGet(e) {
     if (!telegramId) {
       const diagnostic = validNonce ? cache.get('analyst_diag_' + nonce) : null;
       const diagnosticErrors = {
-        init_data_rejected: 'telegram_init_data_rejected',
+        'init_data_missing_hash_or_auth_date': 'telegram_init_data_missing_fields',
+        'init_data_future_auth_date': 'telegram_init_data_future_auth_date',
+        'init_data_expired': 'telegram_init_data_expired',
+        'init_data_signature_mismatch': 'telegram_init_data_signature_mismatch',
+        'init_data_invalid_user': 'telegram_init_data_invalid_user',
         validation_error: 'telegram_validation_configuration_error',
         server_error: 'session_creation_server_error'
       };
@@ -92,35 +96,36 @@ function doGet(e) {
 }
 
 function validateInitData_(raw) {
-  if (!raw) return null;
+  if (!raw) return { user: null, reason: 'missing_hash_or_auth_date' };
   const token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
   if (!token) throw new Error('BOT_TOKEN is not configured');
 
   const p = parseInitData_(raw);
   const hash = p.hash;
   const authDate = Number(p.auth_date);
-  if (!hash || !authDate) return null;
+  if (!hash || !authDate) return { user: null, reason: 'missing_hash_or_auth_date' };
 
   const now = Math.floor(Date.now() / 1000);
-  if (authDate > now + 60 || now - authDate > INIT_DATA_MAX_AGE_SECONDS) return null;
+  if (authDate > now + 60) return { user: null, reason: 'future_auth_date' };
+  if (now - authDate > INIT_DATA_MAX_AGE_SECONDS) return { user: null, reason: 'expired' };
 
   const pairs = Object.keys(p)
     .filter(key => key !== 'hash')
     .map(key => key + '=' + p[key]);
   pairs.sort();
-  const dataCheckString = pairs.join('\n');
+  const dataCheckString = pairs.join('\\n');
   const secret = Utilities.computeHmacSha256Signature(token, 'WebAppData');
   const dataCheckBytes = Utilities.newBlob(dataCheckString).getBytes();
   const calculated = bytesToHex_(Utilities.computeHmacSha256Signature(dataCheckBytes, secret));
-  if (!constantTimeEquals_(calculated, hash.toLowerCase())) return null;
+  if (!constantTimeEquals_(calculated, hash.toLowerCase())) return { user: null, reason: 'signature_mismatch' };
 
   let user;
   try {
     user = JSON.parse(p.user || 'null');
   } catch (_) {
-    return null;
+    return { user: null, reason: 'invalid_user' };
   }
-  return user && user.id ? user : null;
+  return user && user.id ? { user: user, reason: 'ok' } : { user: null, reason: 'invalid_user' };
 }
 
 function parseInitData_(raw) {
