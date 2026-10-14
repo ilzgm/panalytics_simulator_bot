@@ -19,16 +19,20 @@
     const initData = tg && typeof tg.initData === 'string' ? tg.initData : '';
     if (!initData) throw new Error('Нет Telegram initData. Открой страницу именно как Mini App из кнопки бота, а не как обычную ссылку.');
     const sessionNonce = nonce();
-    await fetch(API_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-      body: new URLSearchParams({ initData, nonce: sessionNonce }).toString()
-    });
+    setStatus('actionStatus', 'Шаг 1/2: отправляем initData серверу. Содержимое initData не показывается.', 'warn');
+    try {
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: new URLSearchParams({ initData, nonce: sessionNonce }).toString()
+      });
+    } catch (_) {
+      throw new Error('Браузер не смог отправить POST-запрос. Проверь соединение и попробуй снова.');
+    }
     return sessionNonce;
   }
-  async function request(action, extra) {
-    const sessionNonce = await createSession();
+  function jsonp(sessionNonce, action, extra) {
     return new Promise((resolve, reject) => {
       const callback = '__analystProgressCallback' + Date.now() + (++callbackCounter);
       const script = document.createElement('script');
@@ -40,13 +44,21 @@
         delete window[callback];
         if (script.parentNode) script.parentNode.removeChild(script);
       };
-      const timer = setTimeout(() => { cleanup(); reject(new Error('Тайм-аут запроса к API. Проверь публикацию Apps Script и подключение.')); }, 12000);
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error('Тайм-аут JSONP-ответа. doGet не вернул ответ за 12 секунд.'));
+      }, 12000);
       window[callback] = result => {
         cleanup();
         if (!result || !result.ok) {
           const error = result && result.error || 'unknown_error';
           const messages = {
-            session_expired: 'Сервер не создал сессию. Проверь новую версию Apps Script и права доступа Web App.',
+            session_expired: 'Сервер не нашёл сессию. Проверь диагностику POST ниже.',
+            session_not_created: 'POST дошёл, но сервер не создал сессию. initData мог быть отклонён.',
+            telegram_init_data_rejected: 'Сервер получил POST, но отклонил Telegram initData (подпись, время или формат).',
+            telegram_validation_configuration_error: 'Ошибка проверки initData или конфигурации Apps Script. Проверь Executions без публикации секретов.',
+            session_creation_server_error: 'POST дошёл, но при создании сессии произошла внутренняя ошибка.',
+            session_cache_miss: 'Сервер отметил сессию созданной, но не нашёл её в кэше при следующем запросе.',
             previous_episode_required: 'Ожидаемая защита сработала: сначала нужно завершить эпизод 1.',
             invalid_episode: 'Сервер отклонил неизвестный номер эпизода.',
             server_error: 'Ошибка на стороне Apps Script или Google Sheets.',
@@ -56,13 +68,22 @@
           err.payload = result;
           err.code = error;
           reject(err);
-        } else resolve(result.progress || null);
+        } else resolve(result);
       };
       const query = new URLSearchParams(Object.assign({ action, nonce: sessionNonce, callback }, extra || {}));
-      script.onerror = () => { cleanup(); reject(new Error('Не удалось загрузить ответ API. Проверь URL и публикацию Apps Script.')); };
+      script.onerror = () => {
+        cleanup();
+        reject(new Error('Не удалось загрузить ответ API. Проверь URL и публикацию Apps Script.'));
+      };
       script.src = API_URL + '?' + query.toString();
       document.head.appendChild(script);
     });
+  }
+  async function request(action, extra) {
+    const sessionNonce = await createSession();
+    setStatus('actionStatus', 'Шаг 2/2: проверяем, создалась ли сессия на сервере…', 'warn');
+    await jsonp(sessionNonce, 'diagnose');
+    return jsonp(sessionNonce, action, extra).then(result => result.progress || null);
   }
   function renderProgress(progress) {
     if (!progress) {
@@ -86,7 +107,8 @@
       setStatus('actionStatus', 'Чтение данных прошло успешно.', 'ok');
     } catch (error) {
       setStatus('progressStatus', error.message, 'err');
-      if (error.code === 'previous_episode_required') renderProgress(error.payload && error.payload.progress);
+      setStatus('actionStatus', 'Диагностический код: ' + (error.code || 'request_failed') + '. ' + error.message, 'err');
+      if (error.payload && error.payload.progress) renderProgress(error.payload.progress);
     } finally {
       $('loadBtn').disabled = $('refreshBtn').disabled = false;
     }
@@ -100,7 +122,7 @@
       setStatus('actionStatus', 'Сервер подтвердил запись. Эпизод ' + id + ' завершён в облачном прогрессе.', 'ok');
       setStatus('progressStatus', 'Последний запрос успешно прочитал/обновил облачный прогресс.', 'ok');
     } catch (error) {
-      setStatus('actionStatus', error.message, error.code === 'previous_episode_required' ? 'ok' : 'err');
+      setStatus('actionStatus', 'Диагностический код: ' + (error.code || 'request_failed') + '. ' + error.message, error.code === 'previous_episode_required' ? 'ok' : 'err');
       if (error.payload && error.payload.progress) renderProgress(error.payload.progress);
     } finally {
       $('episode1Btn').disabled = $('episode2Btn').disabled = $('episode2CompleteBtn').disabled = false;
@@ -109,9 +131,9 @@
   function init() {
     if (tg && typeof tg.initData === 'string' && tg.initData.length) {
       tg.ready();
-      setStatus('telegramStatus', 'Похоже, страница открыта как Telegram Mini App. initData получен; само подтверждение сервера будет после запроса.', 'ok');
+      setStatus('telegramStatus', 'Telegram initData получен. Значение скрыто; серверная проверка начнётся по кнопке.', 'ok');
     } else {
-      setStatus('telegramStatus', 'Telegram initData не обнаружен. Запросы к облачному прогрессу не сработают в обычном браузере.', 'err');
+      setStatus('telegramStatus', 'Telegram initData не обнаружен. Открой страницу из кнопки Mini App бота.', 'err');
     }
     $('loadBtn').addEventListener('click', runLoad);
     $('refreshBtn').addEventListener('click', runLoad);
