@@ -129,8 +129,8 @@ function parseInitData_(raw) {
     const index = part.indexOf('=');
     const rawKey = index >= 0 ? part.slice(0, index) : part;
     const rawValue = index >= 0 ? part.slice(index + 1) : '';
-    const key = decodeURIComponent(rawKey.replace(/\\+/g, ' '));
-    const value = decodeURIComponent(rawValue.replace(/\\+/g, ' '));
+    const key = decodeURIComponent(rawKey.split('+').join(' '));
+    const value = decodeURIComponent(rawValue.split('+').join(' '));
     result[key] = value;
   });
   return result;
