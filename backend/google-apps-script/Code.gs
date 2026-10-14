@@ -109,7 +109,7 @@ function validateInitData_(raw) {
     .map(key => key + '=' + p[key]);
   pairs.sort();
   const dataCheckString = pairs.join('\n');
-  const secret = Utilities.computeHmacSha256Signature(token, 'WebAppData');
+  const secret = Utilities.computeHmacSha256Signature('WebAppData', token);
   const calculated = bytesToHex_(Utilities.computeHmacSha256Signature(dataCheckString, secret));
   if (!constantTimeEquals_(calculated, hash.toLowerCase())) return null;
 
