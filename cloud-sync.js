@@ -40,7 +40,7 @@
   }
   function jsonp(sessionNonce, action, extra) {
     return new Promise((resolve, reject) => {
-      const callback = '__analystMainCloud' + Date.now() + (++callbackCounter);
+      const callback = '__analystProgressCallback' + Date.now() + (++callbackCounter);
       const script = document.createElement('script');
       let finished = false;
       const cleanup = () => {
@@ -125,6 +125,7 @@
     load,
     completeEpisode,
     getProgress: () => currentProgress,
+    isEpisodeSaved: id => !!currentProgress && Array.isArray(currentProgress.completedEpisodes) && currentProgress.completedEpisodes.includes(Number(id)),
     getLocalCompleted: readLocal,
     setStatus
   };
