@@ -40,7 +40,7 @@ function doPost(e) {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   const cb = String(p.callback || '');
-  if (!/^__analystProgressCallback\\d+$/.test(cb)) {
+  if (!/^__analystProgressCallback\d+$/.test(cb)) {
     return ContentService.createTextOutput('/* invalid callback */').setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
 
@@ -109,7 +109,7 @@ function validateInitData_(raw) {
     if (key !== 'hash') pairs.push(key + '=' + value);
   });
   pairs.sort();
-  const dataCheckString = pairs.join('\\n');
+  const dataCheckString = pairs.join('\n');
   const secret = Utilities.computeHmacSha256Signature(token, 'WebAppData');
   const calculated = bytesToHex_(Utilities.computeHmacSha256Signature(dataCheckString, secret));
   if (!constantTimeEquals_(calculated, hash.toLowerCase())) return null;
