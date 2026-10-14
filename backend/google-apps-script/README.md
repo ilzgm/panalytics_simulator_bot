@@ -1,41 +1,21 @@
-# Синхронизация прогресса через Google Sheets
+# Google Sheets progress sync
 
-## Что уже предусмотрено
+## Files
+- `Code.gs`: Google Apps Script API; validates signed Telegram Mini App `initData` and stores progress by Telegram ID.
+- `engine/progress-sync.js`: optional client integration; localStorage remains a fallback and existing local progress is migrated on first cloud load.
+- The client uses JSONP to read Apps Script ContentService responses cross-origin from GitHub Pages.
 
-- Google Apps Script API принимает только подписанные данные запуска Telegram Mini App.
-- Прогресс привязан к числовому Telegram ID, а не к имени пользователя.
-- На сервере есть проверка последовательного прохождения: эпизод 2 не сохраняется без эпизода 1.
-- Токен бота и ID таблицы хранятся в Script Properties, а не в публичном репозитории.
+## Setup
+1. Create a Google Sheet.
+2. Open **Extensions → Apps Script** and paste `Code.gs` into the editor.
+3. In Apps Script **Project Settings → Script Properties**, add `BOT_TOKEN` (secret bot token) and `SPREADSHEET_ID` (the ID from the spreadsheet URL between `/d/` and `/edit`).
+4. **Deploy → New deployment → Web app**. Execute as **Me**; access **Anyone**. Deploy and copy the URL ending in `/exec`.
+5. Put that URL into `API_URL` in `engine/progress-sync.js`. Never put the bot token in GitHub Pages.
+6. Ensure the Mini App is launched from Telegram and its URL is configured in BotFather.
 
-## Настройка Google Sheets и Apps Script
+## Test
+- Open the Mini App in Telegram and complete episode 1; a `Progress` sheet should be created with a row for your Telegram ID.
+- Reopen on the same device and another device using the same Telegram account.
+- Episode 2 should not be recorded as completed unless episode 1 is completed.
 
-1. Создайте новую Google-таблицу, например `Analyst Simulator Progress`.
-2. Откройте **Расширения → Apps Script**.
-3. Замените содержимое редактора кодом из `backend/google-apps-script/Code.gs`.
-4. В настройках проекта Apps Script откройте **Свойства скрипта** и добавьте:
-   - `BOT_TOKEN` — токен Telegram-бота.
-   - `SPREADSHEET_ID` — ID таблицы из её URL (часть между `/d/` и `/edit`).
-5. Сохраните проект. Откройте **Развернуть → Новое развертывание → Веб-приложение**:
-   - Выполнять от имени: **Я**.
-   - У кого есть доступ: **Все**.
-6. Разверните и скопируйте URL веб-приложения, заканчивающийся на `/exec`.
-7. Проверьте, что в настройках бота в BotFather задан URL Mini App, а игра запускается внутри Telegram.
-
-## Подключение URL API к клиенту
-
-В `engine/progress-sync.js` замените пустую строку в `API_URL` на URL веб-приложения Apps Script. Не добавляйте токен бота в клиентский код.
-
-## Важно проверить перед включением для пользователей
-
-- Откройте игру из Telegram, завершите эпизод и проверьте строку в листе `Progress`.
-- Откройте Mini App под тем же аккаунтом на другом устройстве: завершённый эпизод должен остаться завершённым.
-- Откройте приложение вне Telegram: серверная синхронизация должна быть недоступна, локальный режим останется запасным вариантом.
-- Проверьте запросы в реальном Telegram WebView. Если браузер блокирует чтение ответа Apps Script из-за CORS/редиректа, не включайте синхронизацию для пользователей, пока не будет выбран API-шлюз с корректным CORS.
-
-## Безопасность и ограничения
-
-- Не публикуйте токен бота и не вставляйте его в GitHub Pages.
-- Сервер отклоняет `initData` старше 24 часов.
-- Google Apps Script и Google Sheets имеют квоты. Для небольшого MVP этого может хватить, но это не SLA.
-- В текущем прототипе разрешены эпизоды 1 и 2. При добавлении новых эпизодов обновите `ALLOWED_EPISODES` в Apps Script.
-- Клиентская игра остаётся статической: сервер защищает привязку прогресса к Telegram-аккаунту и последовательность эпизодов, но не может доказать, что пользователь действительно прочитал все слайды.
+The prototype currently allows episodes 1 and 2; update `ALLOWED_EPISODES` as new episodes are added. Google quotas apply. The client cannot prove that every slide was read; this is progress sync, not anti-cheat protection.
